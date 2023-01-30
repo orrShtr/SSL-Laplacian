@@ -1,13 +1,9 @@
 import os
 import random
 import numpy as np
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 import torch
-import torchvision
-import torchvision.transforms as transforms
-
 
 from utils_datasets import generate_2moons
 from utils import createAffinity, createAffinitySSL, createAffinityWNLL, ev_calculation_L, SpectralClusteringFromEV, Dirichlet_Clustering
@@ -16,6 +12,10 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 
 plotFlag = False
+
+if not os.path.exists('./results'):
+    os.mkdir('./results')
+    
 model_path = r"./results/2moons"
 if not os.path.exists(model_path):
     os.mkdir(model_path)

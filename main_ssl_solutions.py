@@ -1,12 +1,9 @@
 import os
 import random
 import numpy as np
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 import torch
-import torchvision
-import torchvision.transforms as transforms
 
 from utils_datasets import generate_2moons_with_anchors
 from utils import createAffinity, ev_calculation_L, SpectralClusteringFromEV, TwoMoons_SSL_Solutions
@@ -16,6 +13,10 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 
 plotFlag = False
+
+if not os.path.exists('./results'):
+    os.mkdir('./results')
+    
 model_path = r"./results/extreamly_ssl_clustering"
 if not os.path.exists(model_path):
     os.mkdir(model_path)
@@ -104,27 +105,27 @@ plt.show()
 
 print("---SSL---")
 option_index = 0
-labeled_index = [0, 1, 2, 3, 4, 5]
+labeled_index = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 1
-labeled_index = [0, 5]
+labeled_index = [0, 1, 2, 3, 4, 5]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 2
-labeled_index = [1, 4]
+labeled_index = [6,1,9,4]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 3
-labeled_index = [2, 3]
+labeled_index = [0, 5]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 4
-labeled_index = [0, 3]
+labeled_index = [2, 3]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 5
-labeled_index = [1, 4]
+labeled_index = [0, 3]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 6
@@ -132,45 +133,5 @@ labeled_index = [2, 5]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
 
 option_index = 7
-labeled_index = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 8
-labeled_index = [2, 3, 4, 5, 8, 9]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 9
-labeled_index = [2, 3, 7, 8]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 10
-labeled_index = [2, 5, 7, 9]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 11
-labeled_index = [1,2,3,4]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 12
-labeled_index = [1,3]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 13
-labeled_index = [2,4]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 14
-labeled_index = [7,8,2,4]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 15
-labeled_index = [7,8]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 16
-labeled_index = [6,1,9,4]
-TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)
-
-option_index = 17
 labeled_index = [6,9]
 TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path)

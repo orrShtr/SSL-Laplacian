@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 import torch
-import torchvision
-import torchvision.transforms as transforms
 
 from utils_datasets import generate_3moons
 from utils import createAffinity, createAffinitySSL, createAffinityWNLL, ev_calculation_L, \
@@ -24,6 +22,10 @@ cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=3)
 font_size = 22
 
 plotFlag = True
+
+if not os.path.exists('./results'):
+    os.mkdir('./results')
+    
 model_path = r"./results/laplacian_illustration"
 if not os.path.exists(model_path):
     os.mkdir(model_path)
@@ -110,44 +112,6 @@ savefig_path = model_path + "/images/embd_us.png"
 plt.savefig(savefig_path)
 plt.show()
 
-## fliped
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_us[:, 0], ev_us[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_us_fliped1.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_us[:, 0], -ev_us[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_us_fliped2.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_us[:, 0], -ev_us[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_us_fliped3.png"
-plt.savefig(savefig_path)
-plt.show()
-
-
 
 W_ssl = createAffinitySSL(X, y, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2)
 ev_ssl = ev_calculation_L(W_ssl, classNum)
@@ -161,42 +125,6 @@ plt.axhline(y = 0.0, color = 'black', linestyle = '-')
 plt.axvline(x = 0.0, color = 'black', linestyle = '-')
 plt.grid(True)
 savefig_path = model_path + "/images/embd_ssl.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_ssl[:, 0], ev_ssl[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_ssl_fliped1.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_ssl[:, 0], -ev_ssl[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_ssl_fliped2.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_ssl[:, 0], -ev_ssl[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_ssl_fliped3.png"
 plt.savefig(savefig_path)
 plt.show()
 
@@ -215,42 +143,6 @@ savefig_path = model_path + "/images/embd_wnll.png"
 plt.savefig(savefig_path)
 plt.show()
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_wnll[:, 0], ev_wnll[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_wnll_fliped1.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_wnll[:, 0], -ev_wnll[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_wnll_fliped2.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_wnll[:, 0], -ev_wnll[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_wnll_fliped3.png"
-plt.savefig(savefig_path)
-plt.show()
-
 
 W_maxonly = createAffinityMaxOnly(X, y,  ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2)
 ev_maxonly = ev_calculation_L(W_maxonly, classNum)
@@ -263,42 +155,6 @@ plt.axhline(y = 0.0, color = 'black', linestyle = '-')
 plt.axvline(x = 0.0, color = 'black', linestyle = '-')
 plt.grid(True)
 savefig_path = model_path + "/images/embd_maxonly.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_maxonly[:, 0], ev_maxonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_maxonly_fliped1.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_maxonly[:, 0], -ev_maxonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_maxonly_fliped2.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_maxonly[:, 0], -ev_maxonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_maxonly_fliped3.png"
 plt.savefig(savefig_path)
 plt.show()
 
@@ -317,39 +173,4 @@ savefig_path = model_path + "/images/embd_disconnectonly.png"
 plt.savefig(savefig_path)
 plt.show()
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_disconnectonly[:, 0], ev_disconnectonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_disconnectonly_fliped1.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(ev_disconnectonly[:, 0], -ev_disconnectonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_disconnectonly_fliped2.png"
-plt.savefig(savefig_path)
-plt.show()
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-ax.scatter(-ev_disconnectonly[:, 0], -ev_disconnectonly[:, 1], c=y, marker='o', cmap=cm, s=200)
-ax.set_xlabel("$u_{1}$", fontsize=font_size)
-ax.set_ylabel("$u_{2}$", fontsize=font_size)
-ax.tick_params(axis='both', which='major', labelsize=16)
-plt.axhline(y = 0.0, color = 'black', linestyle = '-')
-plt.axvline(x = 0.0, color = 'black', linestyle = '-')
-plt.grid(True)
-savefig_path = model_path + "/images/embd_disconnectonly_fliped3.png"
-plt.savefig(savefig_path)
-plt.show()
 

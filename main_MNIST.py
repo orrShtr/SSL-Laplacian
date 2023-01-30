@@ -16,6 +16,10 @@ warnings.simplefilter("ignore", UserWarning)
 
 #MNIST
 plotFlag = True
+
+if not os.path.exists('./results'):
+    os.mkdir('./results')
+    
 model_path = r".\results\MNIST"
 if not os.path.exists(model_path):
     os.mkdir(model_path)
