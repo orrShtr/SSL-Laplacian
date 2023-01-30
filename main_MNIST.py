@@ -9,15 +9,14 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-from utils_datasets import generate_2moons, generate_3moons
-from utils import createAffinity, createAffinitySSL, createAffinityWNLL, ev_calculation_L, SpectralClusteringFromEV, SSL_GL_Clustering
+from utils import createAffinity, createAffinitySSL, createAffinityWNLL, ev_calculation_L, SpectralClusteringFromEV, Dirichlet_Clustering
 
 import warnings
 warnings.simplefilter("ignore", UserWarning)
 
 #MNIST
 plotFlag = True
-model_path = r".\results\MNIST_all_0212"
+model_path = r".\results\MNIST"
 if not os.path.exists(model_path):
     os.mkdir(model_path)
     os.mkdir(model_path + '/images')
@@ -56,12 +55,10 @@ X = torch.cat((X_train, X_test), 0)
 print("y shape", y.shape)
 print("X shape", X.shape)
 
-ms = 50 #10
+ms = 50 
 ms_normal = 20
 sigmaFlag = 0
 mu1 = 2.0
-# mu2 = 2.0
-# number_of_labeled_nodes_array = [0, 50, 100, 200, 300, 400, 500]
 number_of_labeled_nodes_array = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 number_of_labeled_nodes_array_len = len(number_of_labeled_nodes_array)
 
@@ -126,7 +123,7 @@ for i in range(number_of_labeled_nodes_array_len):
         labeled_index = random.sample(nodes_indx_list, number_of_labeled_nodes)
         unlabeled_index = [indx for indx in nodes_indx_list if indx not in labeled_index]
 
-        # L_SSL
+        # Spectral SSL
         W_ssl = createAffinitySSL(X, y, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2)
         ev = ev_calculation_L(W_ssl, classNum)
         ev_unlabeled = ev[unlabeled_index]
@@ -134,7 +131,7 @@ for i in range(number_of_labeled_nodes_array_len):
         nmi_ssl_array_curr_param.append(model_nmi)
         acc_ssl_array_curr_param.append(model_acc)
 
-        # L_WNLL
+        # Spectral WNLL
         W_WNLL = createAffinityWNLL(X, ms, ms_normal, sigmaFlag, labeled_index)
         ev = ev_calculation_L(W_WNLL, classNum)
         ev_unlabeled = ev[unlabeled_index]
@@ -142,32 +139,32 @@ for i in range(number_of_labeled_nodes_array_len):
         nmi_wnll_array_curr_param.append(model_nmi)
         acc_wnll_array_curr_param.append(model_acc)
 
-        # GL US
+        # Dirichlet US
         W_US = createAffinity(X, ms, ms_normal, sigmaFlag)
         s0 = torch.sum(W_US, axis=0)
         D = torch.diag(s0)
         L = D - W_US
-        clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
+        clusteringRes, model_nmi, model_acc = Dirichlet_Clustering(L, labeled_index, unlabeled_index, y, classes)
         nmi_GL_us_array_curr_param.append(model_nmi)
         acc_GL_us_array_curr_param.append(model_acc)
 
-        # GL SSL
+        # Dirichlet SSL
         s0 = torch.sum(W_ssl, axis=0)
         D = torch.diag(s0)
         L = D - W_ssl
-        clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
+        clusteringRes, model_nmi, model_acc = Dirichlet_Clustering(L, labeled_index, unlabeled_index, y, classes)
         nmi_GL_ssl_array_curr_param.append(model_nmi)
         acc_GL_ssl_array_curr_param.append(model_acc)
 
-        # GL WNLL
+        # Dirichlet WNLL
         s0 = torch.sum(W_WNLL, axis=0)
         D = torch.diag(s0)
         L = D - W_WNLL
-        clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
+        clusteringRes, model_nmi, model_acc = Dirichlet_Clustering(L, labeled_index, unlabeled_index, y, classes)
         nmi_GL_wnll_array_curr_param.append(model_nmi)
         acc_GL_wnll_array_curr_param.append(model_acc)
 
-    # L SSL
+    # Spectral SSL
     nmi_ssl_array_curr_param = torch.Tensor(nmi_ssl_array_curr_param)
     acc_ssl_array_curr_param = torch.Tensor(acc_ssl_array_curr_param)
     nmi_ssl_array_curr_param_mean = torch.mean(nmi_ssl_array_curr_param)
@@ -178,13 +175,13 @@ for i in range(number_of_labeled_nodes_array_len):
     acc_ssl_array_curr_param_std = torch.std(acc_ssl_array_curr_param)
     acc_ssl_mean_array.append(acc_ssl_array_curr_param_mean)
     acc_ssl_std_array.append(acc_ssl_array_curr_param_std)
-    print("L SSL : ")
+    print("Spectral SSL : ")
     print("NMI mean : ", nmi_ssl_array_curr_param_mean)
     print("NMI std : ", nmi_ssl_array_curr_param_std)
     print("ACC mean : ", acc_ssl_array_curr_param_mean)
     print("ACC std : ", acc_ssl_array_curr_param_std)
 
-    # L wnll
+    # Spectral wnll
     nmi_wnll_array_curr_param = torch.Tensor(nmi_wnll_array_curr_param)
     acc_wnll_array_curr_param = torch.Tensor(acc_wnll_array_curr_param)
     nmi_wnll_array_curr_param_mean = torch.mean(nmi_wnll_array_curr_param)
@@ -195,13 +192,13 @@ for i in range(number_of_labeled_nodes_array_len):
     acc_wnll_array_curr_param_std = torch.std(acc_wnll_array_curr_param)
     acc_wnll_mean_array.append(acc_wnll_array_curr_param_mean)
     acc_wnll_std_array.append(acc_wnll_array_curr_param_std)
-    print("L wnll : ")
+    print("Spectral wnll : ")
     print("NMI mean : ", nmi_wnll_array_curr_param_mean)
     print("NMI std : ", nmi_wnll_array_curr_param_std)
     print("ACC mean : ", acc_wnll_array_curr_param_mean)
     print("ACC std : ", acc_wnll_array_curr_param_std)
 
-    # GL us
+    # Dirichlet us
     nmi_GL_us_array_curr_param = torch.Tensor(nmi_GL_us_array_curr_param)
     acc_GL_us_array_curr_param = torch.Tensor(acc_GL_us_array_curr_param)
     nmi_GL_us_array_curr_param_mean = torch.mean(nmi_GL_us_array_curr_param)
@@ -212,13 +209,13 @@ for i in range(number_of_labeled_nodes_array_len):
     acc_GL_us_array_curr_param_std = torch.std(acc_GL_us_array_curr_param)
     acc_GL_us_mean_array.append(acc_GL_us_array_curr_param_mean)
     acc_GL_us_std_array.append(acc_GL_us_array_curr_param_std)
-    print("GL us : ")
+    print("Dirichlet us : ")
     print("NMI mean : ", nmi_GL_us_array_curr_param_mean)
     print("NMI std : ", nmi_GL_us_array_curr_param_std)
     print("ACC mean : ", acc_GL_us_array_curr_param_mean)
     print("ACC std : ", acc_GL_us_array_curr_param_std)
 
-    # GL ssl
+    # Dirichlet ssl
     nmi_GL_ssl_array_curr_param = torch.Tensor(nmi_GL_ssl_array_curr_param)
     acc_GL_ssl_array_curr_param = torch.Tensor(acc_GL_ssl_array_curr_param)
     nmi_GL_ssl_array_curr_param_mean = torch.mean(nmi_GL_ssl_array_curr_param)
@@ -229,13 +226,13 @@ for i in range(number_of_labeled_nodes_array_len):
     acc_GL_ssl_array_curr_param_std = torch.std(acc_GL_ssl_array_curr_param)
     acc_GL_ssl_mean_array.append(acc_GL_ssl_array_curr_param_mean)
     acc_GL_ssl_std_array.append(acc_GL_ssl_array_curr_param_std)
-    print("GL ssl : ")
+    print("Dirichlet ssl : ")
     print("NMI mean : ", nmi_GL_ssl_array_curr_param_mean)
     print("NMI std : ", nmi_GL_ssl_array_curr_param_std)
     print("ACC mean : ", acc_GL_ssl_array_curr_param_mean)
     print("ACC std : ", acc_GL_ssl_array_curr_param_std)
 
-    # GL wnll
+    # Dirichlet wnll
     nmi_GL_wnll_array_curr_param = torch.Tensor(nmi_GL_wnll_array_curr_param)
     acc_GL_wnll_array_curr_param = torch.Tensor(acc_GL_wnll_array_curr_param)
     nmi_GL_wnll_array_curr_param_mean = torch.mean(nmi_GL_wnll_array_curr_param)
@@ -281,31 +278,31 @@ acc_GL_wnll_std_array = torch.Tensor(acc_GL_wnll_std_array)
 
 
 
-print("L_WNLL")
+print("Spectral WNLL")
 print("NMI Mean : ", nmi_wnll_mean_array)
 print("NMI STD : ", nmi_wnll_std_array)
 print("ACC Mean : ", acc_wnll_mean_array)
 print("ACC STD : ", acc_wnll_std_array)
 
-print("L_ssl")
+print("Spectral ssl")
 print("NMI Mean : ", nmi_ssl_mean_array)
 print("NMI STD : ", nmi_ssl_std_array)
 print("ACC Mean : ", acc_ssl_mean_array)
 print("ACC STD : ", acc_ssl_std_array)
 
-print("GL_US")
+print("Dirichlet US")
 print("NMI Mean : ", nmi_GL_us_mean_array)
 print("NMI STD : ", nmi_GL_us_std_array)
 print("ACC Mean : ", acc_GL_us_mean_array)
 print("ACC STD : ", acc_GL_us_std_array)
 
-print("GL_WNLL")
+print("Dirichlet WNLL")
 print("NMI Mean : ", nmi_GL_wnll_mean_array)
 print("NMI STD : ", nmi_GL_wnll_std_array)
 print("ACC Mean : ", acc_GL_wnll_mean_array)
 print("ACC STD : ", acc_GL_wnll_std_array)
 
-print("GL_ssl")
+print("Dirichlet ssl")
 print("NMI Mean : ", nmi_GL_ssl_mean_array)
 print("NMI STD : ", nmi_GL_ssl_std_array)
 print("ACC Mean : ", acc_GL_ssl_mean_array)

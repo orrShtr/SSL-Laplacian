@@ -10,9 +10,9 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 
-from utils_datasets import generate_2moons, generate_3moons, generate_3moons_controlNoise
+from utils_datasets import generate_3moons
 from utils import createAffinity, createAffinitySSL, createAffinityWNLL, ev_calculation_L, \
-    SpectralClusteringFromEV, SSL_GL_Clustering, createAffinityMaxOnly, createAffinityDisconnectOnly
+    createAffinityMaxOnly, createAffinityDisconnectOnly
 
 import warnings
 warnings.simplefilter("ignore", UserWarning)
@@ -24,7 +24,7 @@ cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=3)
 font_size = 22
 
 plotFlag = True
-model_path = r"./results/laplacian_illustration_0812"
+model_path = r"./results/laplacian_illustration"
 if not os.path.exists(model_path):
     os.mkdir(model_path)
     os.mkdir(model_path + '/images')
@@ -36,28 +36,15 @@ classNum = len(classes)
 nodes_indx_list = range(0, n_samples)
 
 number_of_labeled_nodes = 30
-# ms = 15
 ms = n_samples
-ms_normal = 7 #7
+ms_normal = 7
 sigmaFlag = 0
-# mu1 = 1.0
-# mu2 = 2.0
 mu1 = 2.0
 mu2 = (n_samples/number_of_labeled_nodes) - 1
 
 noise_param = 0.175
 
-X, y = generate_3moons_controlNoise(n_samples=n_samples, noise_param=noise_param, toPlot=False)
-# my_X = np.array([[-1.0, 0.0], [-0.8, 0.2], [-0.6, 0.4], [-0.4, 0.6], [-0.2, 0.8], [0.0, 1.0],
-#                  [0.2, 0.8], [0.4, 0.6], [0.6, 0.4], [0.8, 0.2], [1.0, 0.0],
-#                  [0.0, 0.35], [0.3, 0.0], [0.6, -0.35], [0.9, -0.7], [1.2, -1.05], [1.5, -1.4],
-#                  [1.8, -1.05], [2.1,  -0.7], [2.4, -0.35], [2.7, 0.0], [3.0, 0.35],
-#                  [2.0, 0.0], [2.2, 0.2], [2.4, 0.4], [2.6, 0.6], [2.8, 0.8], [3.0, 1.0],
-#                  [3.2, 0.8], [3.4, 0.6], [3.6, 0.4], [3.8, 0.2], [4.0, 0.0]
-#                  ])
-# my_y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-#                  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#                  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+X, y = generate_3moons(n_samples=n_samples, noise_param=noise_param, toPlot=False)
 
 
 n_samples_one_moon = 10
@@ -83,7 +70,7 @@ y = np.concatenate([my_y, y])
 X = torch.tensor(X)
 y = torch.tensor(y)
 
-# labeled_index = random.sample(nodes_indx_list, number_of_labeled_nodes)
+
 labeled_index = np.arange(0, len(my_y), 1)
 unlabeled_index = [indx for indx in nodes_indx_list if indx not in labeled_index]
 
@@ -159,7 +146,6 @@ plt.grid(True)
 savefig_path = model_path + "/images/embd_us_fliped3.png"
 plt.savefig(savefig_path)
 plt.show()
-
 
 
 

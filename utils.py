@@ -15,7 +15,23 @@ import sklearn.metrics
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 
-def createAffinitySSL(data, labels,  ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+def createAffinitySSL(data, labels, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+    '''
+    Computes SSL Affinity matrix 
+    inputs:
+    data:                   array of data featrues
+    labels:                 array of data labels
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    labeled_index:          labeled set index array
+    classNum:               number of classes
+    mu1:                    unsupervised affinity parameter 
+    mu2:                    labeled affinity parameter 
+    
+    returns:    
+    y:                      the affinity matrix                
+    '''    
     class_labeles = np.arange(0, classNum, 1)
     n, m = data.shape
     W = createAffinity(data, ms, ms_normal, sigmaFlag)
@@ -63,46 +79,20 @@ def createAffinitySSL(data, labels,  ms, ms_normal, sigmaFlag, labeled_index, cl
     return W_all
 
 
-def createAffinityIdo(data, labels,  ms, ms_normal, sigmaFlag, labeled_index, classNum):
-    class_labeles = np.arange(0, classNum, 1)
-    n, m = data.shape
-    W = createAffinity(data, ms, ms_normal, sigmaFlag)
-    W = np.array(W)
 
-    lables_labled = np.ones(n) * (-1)
-    vals = labels[list(labeled_index)]
-    lables_labled[list(labeled_index)] = list(vals)
-    for i in range(classNum):
-        curr_group = class_labeles[i]
-        group_indx = np.where(lables_labled == curr_group)
-        group_indx = group_indx[0]
-        pairs = list(itertools.product(group_indx, repeat=2))
-        pairs_num = len(pairs)
-        for j in range(pairs_num):
-            W[pairs[j]] = 1
-
-    for i in range(classNum - 1):
-        first_group = class_labeles[i]
-        first_group_indx = np.where(lables_labled == first_group)
-        first_group_indx = first_group_indx[0]
-
-        for j in range(i + 1, classNum):
-            sec_group = class_labeles[j]
-            sec_group_indx = np.where(lables_labled == sec_group)
-            sec_group_indx = sec_group_indx[0]
-            pairs = list(itertools.product(first_group_indx, sec_group_indx, repeat=1))
-            pairs_num = len(pairs)
-            for k in range(pairs_num):
-                pair_k_flip = np.flip(pairs[k])
-                W[pairs[k]] = 0
-                W[pair_k_flip[0], pair_k_flip[1]] = 0
-    W_all = (W + W.T) / 2
-    W_all = torch.Tensor(W_all)
-    return W_all
-
-
-
-def createAffinityWNLL(data,  ms, ms_normal, sigmaFlag, labeled_index):
+def createAffinityWNLL(data, ms, ms_normal, sigmaFlag, labeled_index):
+    '''
+    Computes WNLL Affinity matrix
+    inputs:
+    data:                   array of data featrues
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    labeled_index:          labeled set index array
+    
+    returns:    
+    y:                      the affinity matrix                
+    '''    
     n, m = data.shape
     S_size = len(labeled_index)
     mu1 = 2
@@ -115,8 +105,6 @@ def createAffinityWNLL(data,  ms, ms_normal, sigmaFlag, labeled_index):
     W = np.array(W)
 
     W_for_labeld = np.zeros((n, n))
-    #W_for_labeld[:, labeled_index] = W[:, labeled_index]
-    # W_for_labeld[labeled_index, :] = W[labeled_index, :]
 
     W_for_labeld[:, labeled_index] = W[:, labeled_index]
     W_for_labeld[labeled_index, :] = 0
@@ -128,7 +116,23 @@ def createAffinityWNLL(data,  ms, ms_normal, sigmaFlag, labeled_index):
     return W_all
 
 
-def createAffinityMaxOnly(data, labels,  ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+def createAffinityMaxOnly(data, labels, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+    '''
+    Computes contrastive affinity (positive) matrix 
+    inputs:
+    data:                   array of data featrues
+    labels:                 array of data labels
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    labeled_index:          labeled set index array
+    classNum:               number of classes
+    mu1:                    unsupervised affinity parameter 
+    mu2:                    labeled affinity parameter 
+    
+    returns:    
+    y:                      the affinity matrix                
+    '''    
     class_labeles = np.arange(0, classNum, 1)
     n, m = data.shape
     W = createAffinity(data, ms, ms_normal, sigmaFlag)
@@ -156,7 +160,23 @@ def createAffinityMaxOnly(data, labels,  ms, ms_normal, sigmaFlag, labeled_index
     return W_all
 
 
-def createAffinityDisconnectOnly(data, labels,  ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+def createAffinityDisconnectOnly(data, labels, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2):
+    '''
+    Computes contrastive affinity (negative) matrix 
+    inputs:
+    data:                   array of data featrues
+    labels:                 array of data labels
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    labeled_index:          labeled set index array
+    classNum:               number of classes
+    mu1:                    unsupervised affinity parameter 
+    mu2:                    labeled affinity parameter 
+    
+    returns:    
+    y:                      the affinity matrix                
+    '''    
     class_labeles = np.arange(0, classNum, 1)
     n, m = data.shape
     W = createAffinity(data, ms, ms_normal, sigmaFlag)
@@ -191,6 +211,17 @@ def createAffinityDisconnectOnly(data, labels,  ms, ms_normal, sigmaFlag, labele
 
 
 def createAffinity(data, ms, ms_normal, sigmaFlag):
+    '''
+    Computes unsupervised affinity matrix 
+    inputs:
+    data:                   array of data featrues
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    
+    returns:    
+    y:                      the affinity matrix                
+    '''    
     n = data.shape[0]
     nbrs = NearestNeighbors(n_neighbors=ms, algorithm='kd_tree').fit(data)
     dist, idx = nbrs.kneighbors(data)
@@ -214,7 +245,6 @@ def createAffinity(data, ms, ms_normal, sigmaFlag):
         W = torch.exp(-dist ** 2 / (2 * graph_median ** 2))
 
     if sigmaFlag == 3:
-        #sigma = 1000
         sigma = 1
         W = torch.exp(-dist ** 2 / sigma)
 
@@ -226,25 +256,41 @@ def createAffinity(data, ms, ms_normal, sigmaFlag):
 
 
 def ev_calculation_L(W, classNum):
-    s0 = torch.sum(W, axis=0)
+    '''
+    Computes the graph Laplacian eigenvectors
+    inputs:
+    W:                      affinity matrix
+    classNum:               number of classes
+   
+    returns:    
+    RCut_EV:                the first K eigenvectors of L               
+    '''
 
+    s0 = torch.sum(W, axis=0)
     # L
     D = torch.diag(s0)
     L = D - W
-    S_L, U_L = torch.linalg.eig(L) # return ev with norm 1
-    # ev_norm = torch.linalg.norm(U_L, axis=0)
+    S_L, U_L = torch.linalg.eig(L)
     S_L = torch.real(S_L)
     U_L = torch.real(U_L)
-    # ev_norm1 = torch.linalg.norm(U_L, axis=0)
     S_L, indices = torch.sort(S_L, dim=0, descending=False, out=None)
     U_L = U_L[:, indices]
     RCut_EV = U_L[:, 1:classNum]
     # RCut_EV = U_L[:, 0:classNum]
-    # # ev_norm2 = torch.linalg.norm(RCut_EV, axis=0)
     return RCut_EV
 
 
 def ev_calculation_LN(W, classNum,):
+    '''
+    Computes the normalized graph Laplacian eigenvectors
+    inputs:
+    W:                      affinity matrix
+    classNum:               number of classes
+   
+    returns:    
+    RCut_EV:                the first K eigenvectors of L_N               
+    '''
+
     n = W.size(0)
     s0 = torch.sum(W, axis=0)
 
@@ -252,7 +298,7 @@ def ev_calculation_LN(W, classNum,):
     D_sqrt = torch.diag(1. / torch.sqrt(s0))
     I = torch.eye(n)
     N = I - D_sqrt @ W @ D_sqrt
-    S_N, U_N = torch.linalg.eig(N)  # return ev with norm 1
+    S_N, U_N = torch.linalg.eig(N) 
     S_N = torch.real(S_N)
     U_N = torch.real(U_N)
     S_N, indices = torch.sort(S_N, dim=0, descending=False, out=None)
@@ -264,25 +310,37 @@ def ev_calculation_LN(W, classNum,):
 
 
 def SpectralClusteringFromEV(ev, true_labels, classNum):
+    '''
+    performe spectral clutering from the spectral embedding
+    inputs:
+    ev:                     the eigenvectors of the graph Laplacian
+    true_labels:            data true labels
+    classNum:               number of classes
+
+    returns:    
+    RCut_labels:            spectral clustering assignment 
+    model_nmi:              nmi value
+    model_acc:              acc value
+    '''
     RCut_kmeans = KMeans(n_clusters=classNum, random_state=0).fit(ev)
     RCut_labels = RCut_kmeans.labels_
     model_nmi = normalized_mutual_info_score(true_labels, RCut_labels)
     model_acc, _ = get_acc(RCut_labels, true_labels, classNum)
     return RCut_labels, model_nmi, model_acc
 
-# def SpectralClusteringFromEV(ev, true_labels, classNum):
-#     RCut_kmeans = KMeans(n_clusters=classNum, random_state=0).fit(ev)
-#     RCut_labels = RCut_kmeans.labels_
-#     RCut_labels = np.where(RCut_labels == 0, -1, 1)
-#     model_nmi = normalized_mutual_info_score(true_labels, RCut_labels)
-#     model_acc, _ = get_acc(RCut_labels, true_labels, classNum)
-#     return RCut_labels, model_nmi, model_acc
-
-
 
 
 # Performance measures
 def get_orthogonality_measure(U, classNum):
+    '''
+    calcute the orthogonality measure
+    inputs:
+    U:                      the matrix whose orthogonality is tested
+    classNum:               number of classes
+
+    returns:    
+    orthogonality_measure:  orthogonality measure 
+    '''
     n, m = U.shape
     ev_norm = np.linalg.norm(U, axis=0)
     ev_norm = 1 / ev_norm
@@ -299,11 +357,13 @@ def get_orthogonality_measure(U, classNum):
 
 def grassmann(A, B):
     '''
-    Computes the Grassmann distance between matrices A and B
-    A, B:       input matrices
-    returns:    the grassmann distance between A and B
-    '''
+    calcute grassmann distance 
+    inputs:
+    A, B:                   the matrices for which the distance is checked
 
+    returns:    
+    grassmann_val:          grassmann distance between A and B 
+    '''
     n, m = A.shape
 
     A_col_norm = torch.linalg.norm(A, dim=0)
@@ -380,7 +440,20 @@ def get_acc(cluster_assignments, y_true, n_clusters):
     return np.mean(y_pred == y_true), confusion_matrix
 
 
-def SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes):
+def Dirichlet_Clustering(L, labeled_index, unlabeled_index, y, classes):
+    '''
+    Dirichlet multiclass clustering via interpolation 
+    inputs:
+    L:                      graph Laplacian
+    labeled_index:          labeled set index array
+    unlabeled_index:        unlabeled set index array
+    y:                      true labeles
+    classes:                classes array
+    
+
+    returns:    
+    grassmann_val:          grassmann distance between A and B 
+    '''
     #classes should be numbers from 0 to classNum-1.
     n = L.shape[0]
     classNum = len(classes)
@@ -388,14 +461,10 @@ def SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes):
     y_unlabeled = y[unlabeled_index]
 
     A = L.clone()
-    # print(A)
     A[labeled_index, :] = 0
-    # print(A)
     A[labeled_index, labeled_index] = 1
-    # print(A)
 
     for i in range(classNum):
-        # curr_class = classes[i]
         b = torch.zeros(n)
         b[labeled_index] = 1
         b[y != i] = 0
@@ -406,6 +475,7 @@ def SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes):
         if i == 0:
             totalPhi = phi_unlabeled
         else:
+
             totalPhi = torch.cat((totalPhi, phi_unlabeled), dim=1)
 
     max_values, clusteringRes = torch.max(totalPhi, 1)
@@ -415,8 +485,20 @@ def SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes):
     return clusteringRes, model_nmi, model_acc
 
 
-def SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes):
-    #classes should be numbers from 0 to classNum-1.
+def Dirichlet_Interploation(L, labeled_index, unlabeled_index, y, classes):
+    '''
+    Dirichlet interpolation solution (2 classes)
+    inputs:
+    L:                      graph Laplacian
+    labeled_index:          labeled set index array
+    unlabeled_index:        unlabeled set index array
+    y:                      true labeles
+    classes:                classes array
+    
+
+    returns:    
+    grassmann_val:          grassmann distance between A and B 
+    '''
     n = L.shape[0]
     classNum = len(classes)
     y_labeled = y[labeled_index]
@@ -430,11 +512,8 @@ def SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes):
     y_unlabeled = y[unlabeled_index]
 
     A = L.clone()
-    # print(A)
     A[labeled_index, :] = 0
-    # print(A)
     A[labeled_index, labeled_index] = 1
-    # print(A)
 
     b = torch.zeros(n)
     b[labeled_index0] = -1
@@ -445,7 +524,28 @@ def SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes):
 
 
 
-def TwoMoons_ExSSL(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path):
+def TwoMoons_SSL_Solutions(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path):
+    '''
+    SSL solutions for 2 moons dataset
+    inputs:
+    X:                      array of data featrues
+    y:                      array of data labels
+    option_index:           index of current labeled subset
+    ms:                     neighbors number per node
+    ms_normal:              neighbor for the kernel std. 
+    sigmaFlag:              flag for the kernel variance calculation
+    classes:                classes array
+    mu1:                    unsupervised affinity parameter 
+    labeled_index:          labeled set index array
+    
+    L:                      graph Laplacian
+    labeled_index:          labeled set index array
+    unlabeled_index:        unlabeled set index array
+    y:                      true labeles
+    classes:                classes array
+    model_path:             path for images
+
+    '''
     print("option: ", option_index)
     n_samples = len(X)
     nodes_indx_list = range(0, n_samples)
@@ -555,31 +655,7 @@ def TwoMoons_ExSSL(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, l
     s0 = torch.sum(W_US, axis=0)
     D = torch.diag(s0)
     L = D - W_US
-    # clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    # print("NMI:", model_nmi)
-    # print("ACC:", model_acc)
-    #
-    # clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    # if clusteringRes_max == 0:
-    #      clusteringRes[clusteringRes == 1] = -1
-    #      clusteringRes[clusteringRes == 0] = 1
-    #      clusteringRes[clusteringRes == -1] = 0
-
-    # fig = plt.figure(figsize=(12, 5))
-    # ax = fig.add_subplot(1, 1, 1)
-    # sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    # ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # # ax.set_title("Moons Dataset")
-    # ax.axes.xaxis.set_ticklabels([])
-    # ax.axes.yaxis.set_ticklabels([])
-    # plt.grid(True)
-    # #plt.colorbar(sc)
-    # savefig_path = model_path + "/images/dirichlet_US_option_" + str(option_index) + ".png"
-    # plt.savefig(savefig_path)
-    # plt.show()
-
-    phi = SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes)
-    # clusteringRes = np.where(phi < 0.0, 0, 1)
+    phi = Dirichlet_Interploation(L, labeled_index, unlabeled_index, y, classes)
     clusteringRes_kmeans = KMeans(n_clusters=classNum, random_state=0).fit(phi.reshape(-1, 1))
     clusteringRes = clusteringRes_kmeans.labels_
     clusteringRes = clusteringRes[unlabeled_index]
@@ -624,31 +700,7 @@ def TwoMoons_ExSSL(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, l
     s0 = torch.sum(W_WNLL, axis=0)
     D = torch.diag(s0)
     L = D - W_WNLL
-    # clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    # print("NMI:", model_nmi)
-    # print("ACC:", model_acc)
-    #
-    # clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    # if clusteringRes_max == 0:
-    #     clusteringRes[clusteringRes == 1] = -1
-    #     clusteringRes[clusteringRes == 0] = 1
-    #     clusteringRes[clusteringRes == -1] = 0
-
-    # fig = plt.figure(figsize=(12, 5))
-    # ax = fig.add_subplot(1, 1, 1)
-    # sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    # ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # # ax.set_title("Moons Dataset")
-    # ax.axes.xaxis.set_ticklabels([])
-    # ax.axes.yaxis.set_ticklabels([])
-    # plt.grid(True)
-    # #plt.colorbar(sc)
-    # savefig_path = model_path + "/images/dirichlet_WNLL_option_" + str(option_index) + ".png"
-    # plt.savefig(savefig_path)
-    # plt.show()
-
-    phi = SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes)
-    # clusteringRes = np.where(phi < 0.0, 0, 1)
+    phi = Dirichlet_Interploation(L, labeled_index, unlabeled_index, y, classes)
     clusteringRes_kmeans = KMeans(n_clusters=classNum, random_state=0).fit(phi.reshape(-1, 1))
     clusteringRes = clusteringRes_kmeans.labels_
     clusteringRes = clusteringRes[unlabeled_index]
@@ -693,31 +745,8 @@ def TwoMoons_ExSSL(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, l
     s0 = torch.sum(W_ssl, axis=0)
     D = torch.diag(s0)
     L = D - W_ssl
-    # clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    # print("NMI:", model_nmi)
-    # print("ACC:", model_acc)
-    #
-    # clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    # if clusteringRes_max == 0:
-    #     clusteringRes[clusteringRes == 1] = -1
-    #     clusteringRes[clusteringRes == 0] = 1
-    #     clusteringRes[clusteringRes == -1] = 0
 
-    # fig = plt.figure(figsize=(12, 5))
-    # ax = fig.add_subplot(1, 1, 1)
-    # sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    # ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # # ax.set_title("Moons Dataset")
-    # ax.axes.xaxis.set_ticklabels([])
-    # ax.axes.yaxis.set_ticklabels([])
-    # plt.grid(True)
-    # #plt.colorbar(sc)
-    # savefig_path = model_path + "/images/dirichlet_SSL_option_" + str(option_index) + ".png"
-    # plt.savefig(savefig_path)
-    # plt.show()
-
-    phi = SSL_GL_INTERPOLATION(L, labeled_index, unlabeled_index, y, classes)
-    # clusteringRes = np.where(phi < 0.0, 0, 1)
+    phi = Dirichlet_Interploation(L, labeled_index, unlabeled_index, y, classes)
     clusteringRes_kmeans = KMeans(n_clusters=classNum, random_state=0).fit(phi.reshape(-1, 1))
     clusteringRes = clusteringRes_kmeans.labels_
     clusteringRes = clusteringRes[unlabeled_index]
@@ -757,171 +786,6 @@ def TwoMoons_ExSSL(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, l
     savefig_path = model_path + "/images/dirichlet_SSL_option_" + str(option_index) + ".png"
     plt.savefig(savefig_path)
     plt.show()
-
-
-def TwoMoons_ExSSL_Clustering(X, y, option_index, ms, ms_normal, sigmaFlag, classes, mu1, labeled_index, model_path):
-    print("option: ", option_index)
-    n_samples = len(X)
-    nodes_indx_list = range(0, n_samples)
-    classNum = len(classes)
-
-    unlabeled_index = [indx for indx in nodes_indx_list if indx not in labeled_index]
-
-    fig, ax = plt.subplots(1, 1, figsize=(12, 5))
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c='white', edgecolor="blue")
-    ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c='red', s=100)
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    savefig_path = model_path + "/images/labeled_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
-    number_of_labeled_nodes = len(labeled_index)
-    mu2 = (n_samples / number_of_labeled_nodes) - 1
-
-    y_unlabeled = y[unlabeled_index]
-    X0_unlabeled = X[unlabeled_index, 0]
-    X0_unlabeled_index = np.argmax(X0_unlabeled)
-
-    print("Spectral WNLL")
-    W_WNLL = createAffinityWNLL(X, ms, ms_normal, sigmaFlag, labeled_index)
-    ev = ev_calculation_L(W_WNLL, classNum)
-    ev_unlabeled = ev[unlabeled_index]
-    RCut_labels, model_nmi, model_acc = SpectralClusteringFromEV(ev_unlabeled, y[unlabeled_index], classNum)
-    print("NMI:", model_nmi)
-    print("ACC:", model_acc)
-
-    RCut_labels_max = RCut_labels[X0_unlabeled_index]
-    if RCut_labels_max == 0:
-        RCut_labels[RCut_labels == 1] = -1
-        RCut_labels[RCut_labels == 0] = 1
-        RCut_labels[RCut_labels == -1] = 0
-
-    fig = plt.figure(figsize=(12, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=RCut_labels)
-    # ax.set_title("Moons Dataset")
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    #plt.colorbar(sc)
-    savefig_path = model_path + "/images/spectral_wnll_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
-    print("Spectral SSL")
-    W_ssl = createAffinitySSL(X, y, ms, ms_normal, sigmaFlag, labeled_index, classNum, mu1, mu2)
-    ev = ev_calculation_L(W_ssl, classNum)
-    ev_unlabeled = ev[unlabeled_index]
-    RCut_labels, model_nmi, model_acc = SpectralClusteringFromEV(ev_unlabeled, y[unlabeled_index], classNum)
-    print("NMI:", model_nmi)
-    print("ACC:", model_acc)
-
-    RCut_labels_max = RCut_labels[X0_unlabeled_index]
-    if RCut_labels_max == 0:
-        RCut_labels[RCut_labels == 1] = -1
-        RCut_labels[RCut_labels == 0] = 1
-        RCut_labels[RCut_labels == -1] = 0
-
-    fig = plt.figure(figsize=(12, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=RCut_labels)
-    # ax.set_title("Moons Dataset")
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    #plt.colorbar(sc)
-    savefig_path = model_path + "/images/spectral_ssl_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
-
-    print("Dirichlet  US")
-    W_US = createAffinity(X, ms, ms_normal, sigmaFlag)
-    s0 = torch.sum(W_US, axis=0)
-    D = torch.diag(s0)
-    L = D - W_US
-    clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    print("NMI:", model_nmi)
-    print("ACC:", model_acc)
-
-    clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    if clusteringRes_max == 0:
-         clusteringRes[clusteringRes == 1] = -1
-         clusteringRes[clusteringRes == 0] = 1
-         clusteringRes[clusteringRes == -1] = 0
-
-    fig = plt.figure(figsize=(12, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # ax.set_title("Moons Dataset")
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    #plt.colorbar(sc)
-    savefig_path = model_path + "/images/dirichlet_US_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
-    print("Dirichlet WNLL")
-    s0 = torch.sum(W_WNLL, axis=0)
-    D = torch.diag(s0)
-    L = D - W_WNLL
-    clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    print("NMI:", model_nmi)
-    print("ACC:", model_acc)
-
-    clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    if clusteringRes_max == 0:
-        clusteringRes[clusteringRes == 1] = -1
-        clusteringRes[clusteringRes == 0] = 1
-        clusteringRes[clusteringRes == -1] = 0
-
-    fig = plt.figure(figsize=(12, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # ax.set_title("Moons Dataset")
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    #plt.colorbar(sc)
-    savefig_path = model_path + "/images/dirichlet_WNLL_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
-
-    print("Dirichlet SSL")
-    s0 = torch.sum(W_ssl, axis=0)
-    D = torch.diag(s0)
-    L = D - W_ssl
-    clusteringRes, model_nmi, model_acc = SSL_GL_Clustering(L, labeled_index, unlabeled_index, y, classes)
-    print("NMI:", model_nmi)
-    print("ACC:", model_acc)
-
-    clusteringRes_max = clusteringRes[X0_unlabeled_index]
-    if clusteringRes_max == 0:
-        clusteringRes[clusteringRes == 1] = -1
-        clusteringRes[clusteringRes == 0] = 1
-        clusteringRes[clusteringRes == -1] = 0
-
-    fig = plt.figure(figsize=(12, 5))
-    ax = fig.add_subplot(1, 1, 1)
-    sc = ax.scatter(X[labeled_index, 0], X[labeled_index, 1], c=y[labeled_index])
-    ax.scatter(X[unlabeled_index, 0], X[unlabeled_index, 1], c=clusteringRes)
-    # ax.set_title("Moons Dataset")
-    ax.axes.xaxis.set_ticklabels([])
-    ax.axes.yaxis.set_ticklabels([])
-    plt.grid(True)
-    #plt.colorbar(sc)
-    savefig_path = model_path + "/images/dirichlet_SSL_option_" + str(option_index) + ".png"
-    plt.savefig(savefig_path)
-    plt.show()
-
 
 
 
